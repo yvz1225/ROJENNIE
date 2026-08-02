@@ -13,17 +13,12 @@ data/complaints/**/complaints.jsonl
 
 # Regenerate with server.rag.embed_corpus. Real Gemini API cost to rebuild.
 server/rag/embeddings.jsonl
-<<<<<<< HEAD
 server/rag/chunks.jsonl
 
 # Stray Python installer artifacts
-python-3.12.10-*.exe
-python-3.12.10-install*.log
+python-3.12*-amd64.exe
+python-3.12*-install*.log
 python-msi-uninstall.log
-=======
-python-3.12.5-amd64.exe
 python-install.log
-server/rag/chunks.jsonl
->>>>>>> e11d3ba8296a3fd7ba7d6143abed7de0bbda7be6
 
 .claude/settings.local.json
