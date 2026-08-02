@@ -449,6 +449,13 @@ def _detect_risk_signals(text: str, issue_type: str) -> list[str]:
     return flags
 
 
+def _detect_case_level_hold_flags(prompt: str) -> list[str]:
+    lowered = prompt.lower()
+    if any(pattern.lower() in lowered for pattern in SUSPICIOUS_INPUT_PATTERNS):
+        return ["suspicious_input"]
+    return []
+
+
 def _fallback_issue(request: CaseAnalyzeRequest) -> IssueInput:
     return IssueInput(
         issue_id="issue_001",
@@ -681,6 +688,31 @@ def _audit_issues(result: CaseAnalysis) -> list[dict[str, object]]:
         for issue in result.issues
     ]
 
+
+def _apply_case_level_hold(issues: list[IssueAnalysis], hold_flags: list[str]) -> list[IssueAnalysis]:
+    if not hold_flags:
+        return issues
+
+    updated: list[IssueAnalysis] = []
+    for issue in issues:
+        risk_flags = list(dict.fromkeys([*issue.decision.risk_flags, *hold_flags, "case_level_hold"]))
+        report = issue.report.model_copy(
+            update={"current_decision": DECISION_LABELS.get("hold", "hold")}
+        )
+        updated.append(
+            issue.model_copy(
+                update={
+                    "decision": Decision(control="hold", risk_flags=risk_flags),
+                    "human_review_required": True,
+                    "risk_level": "critical",
+                    "risk_reasons": list(dict.fromkeys([*issue.risk_reasons, *hold_flags])),
+                    "report": report,
+                }
+            )
+        )
+    return updated
+
+
 @app.post("/api/v1/cases/analyze", response_model=CaseAnalysis)
 def analyze_case(request: CaseAnalyzeRequest) -> CaseAnalysis:
     case_id = request.case_id or f"case_{uuid4().hex[:12]}"
@@ -715,6 +747,15 @@ def analyze_case(request: CaseAnalyzeRequest) -> CaseAnalysis:
                 ),
                 issues,
             )
+        )
+    case_hold_flags = _detect_case_level_hold_flags(request.prompt)
+    if case_hold_flags:
+        analyzed = _apply_case_level_hold(analyzed, case_hold_flags)
+        _record_audit(
+            case_id,
+            "case_level_hold.applied",
+            "system",
+            {"flags": case_hold_flags, "issue_ids": [issue.issue_id for issue in analyzed]},
         )
     result = CaseAnalysis(
         case_id=case_id,
