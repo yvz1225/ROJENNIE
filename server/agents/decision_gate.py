@@ -268,10 +268,10 @@ def _logic_support_risks(issue: IssueAnalysis) -> list[str]:
     if any(chain.inference_type == "unverified" for chain in chains):
         risks.append("unverified_claim")
     evidence_chains = [chain for chain in chains if chain.supporting_evidence]
-    only_precedent = bool(evidence_chains) and all(
-        chain.evidence_role == "precedent_reference" for chain in evidence_chains
-    )
-    if only_precedent and issue.decision.control == "proceed":
+    # 직접근거와 사례가 함께 검색되는 경우도 포함해야 한다 - 사례가 다른 직접근거에
+    # "묻어가는" 방식으로 최종 결론에 섞여 들어가는 걸 all()로는 못 잡는다.
+    has_precedent = any(chain.evidence_role == "precedent_reference" for chain in evidence_chains)
+    if has_precedent and issue.decision.control == "proceed":
         risks.append("precedent_only_support")
     return _dedupe(risks)
 

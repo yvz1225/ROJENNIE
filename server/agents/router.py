@@ -271,16 +271,12 @@ def _split_prompt_to_issues_rules(prompt: str) -> list[IssueInput]:
 def _build_issue(index: int, text: str, previous_product: str | None = None) -> tuple[IssueInput, str | None]:
     raw_product = _classify_product(text)
     issue_type = _classify_issue_type(text, raw_product)
-<<<<<<< HEAD
     # 이 span 단독으로는 상품 키워드가 안 잡히면, issue_type만 보고 상품을 되짚어
     # 추측하는 _infer_product_from_issue보다 "직전 span에서 실제로 확인된 상품"을
     # 먼저 우선한다. "정기예금에 가입했는데... 그리고 중도해지 수수료가 다르대요"처럼
     # 복합 민원의 뒤 절이 상품명을 생략하는 게 자연스러운 한국어 화법이라, 문맥을
     # 버리고 하드코딩된 매핑(중도해지위약금 -> 적금 등)으로 넘어가면 오분류가 난다.
     resolved_product = raw_product or previous_product or _infer_product_from_issue(issue_type)
-=======
-    raw_product = raw_product or _infer_product_from_issue(issue_type)
->>>>>>> e11d3ba8296a3fd7ba7d6143abed7de0bbda7be6
     issue = build_issue_input(
         issue_id=f"issue_{index:03d}",
         product=resolved_product or "공통",
@@ -290,11 +286,7 @@ def _build_issue(index: int, text: str, previous_product: str | None = None) -> 
         routing_method="rules",
         routing_confidence=0.8 if raw_product else (0.7 if previous_product else 0.6),
     )
-<<<<<<< HEAD
-    return issue, (raw_product or previous_product)
-=======
-    return _apply_out_of_scope(issue, text)
->>>>>>> e11d3ba8296a3fd7ba7d6143abed7de0bbda7be6
+    return _apply_out_of_scope(issue, text), (raw_product or previous_product)
 
 
 def _issue_spans(prompt: str) -> list[str]:

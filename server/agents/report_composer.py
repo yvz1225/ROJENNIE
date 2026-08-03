@@ -198,7 +198,7 @@ def _scope_report(issue: IssueAnalysis, report: IssueReport) -> IssueReport:
     cautions = [_limit_claim_scope(value) for value in report.consumer_cautions]
     actions = [_limit_claim_scope(value) for value in report.follow_up_actions]
 
-    if _has_precedent_only_support(issue):
+    if _has_precedent_support(issue):
         precedent_caution = "유사 사례는 참고용이며, 현재 사안의 결론은 확인된 사실과 직접 근거 범위 안에서만 안내됩니다."
         if precedent_caution not in cautions:
             cautions = [precedent_caution, *cautions]
@@ -224,10 +224,10 @@ def _limit_claim_scope(value: str) -> str:
     return value
 
 
-def _has_precedent_only_support(issue: IssueAnalysis) -> bool:
+def _has_precedent_support(issue: IssueAnalysis) -> bool:
     evidence_chains = [
         chain for chain in issue.logic_verification.support_chains if chain.supporting_evidence
     ]
-    return bool(evidence_chains) and all(
-        chain.evidence_role == "precedent_reference" for chain in evidence_chains
-    )
+    # 직접근거와 사례가 함께 검색된 경우도 캡션이 붙어야 한다 - 사례가 direct_evidence
+    # 옆에 "묻어가는" 방식으로 최종 답변에 섞여 들어가는 걸 all()로는 못 잡는다.
+    return any(chain.evidence_role == "precedent_reference" for chain in evidence_chains)

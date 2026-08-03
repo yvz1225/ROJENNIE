@@ -170,7 +170,6 @@ def _embeddings_cache(path: Path) -> dict[str, list[float]]:
     return cache
 
 
-<<<<<<< HEAD
 def _stems_cache(path: Path) -> dict[str, list[str]]:
     if not path.exists():
         return {}
@@ -182,10 +181,10 @@ def _stems_cache(path: Path) -> dict[str, list[str]]:
             row = json.loads(line)
             cache[row["chunk_id"]] = row["stems"]
     return cache
-=======
+
+
 def _is_expired(chunk: DocumentChunk, as_of: date) -> bool:
     return bool(chunk.effective_to and chunk.effective_to < as_of)
->>>>>>> e11d3ba8296a3fd7ba7d6143abed7de0bbda7be6
 
 
 def build_corpus(
@@ -194,11 +193,8 @@ def build_corpus(
     output_dir: Path,
     *,
     embeddings_path: Path = Path("server/rag/embeddings.jsonl"),
-<<<<<<< HEAD
     stems_path: Path = Path("server/rag/stems.jsonl"),
-=======
     keep_expired: bool = False,
->>>>>>> e11d3ba8296a3fd7ba7d6143abed7de0bbda7be6
 ) -> dict[str, object]:
     """Build the retrieval corpora from ingested chunks.
 
@@ -246,7 +242,6 @@ def build_corpus(
                     record["embedding"] = vector
                     embedded_count += 1
 
-<<<<<<< HEAD
     stems = _stems_cache(stems_path)
     stemmed_count = 0
     if stems:
@@ -258,7 +253,7 @@ def build_corpus(
                 if values:
                     record["stems"] = values
                     stemmed_count += 1
-=======
+
     # 형태소 분석을 빌드 시점에 한 번만 계산해 캐싱한다. SearchIndex가 매번
     # 다시 계산하면 서버 기동마다 수 분이 걸린다(실측, retrieval.tokenize_many
     # 참고). glossary는 검색 인덱스에서 아예 제외되므로 계산하지 않는다.
@@ -270,7 +265,6 @@ def build_corpus(
         for record, tokens in zip(records, tokenize_many(texts)):
             record["tokens"] = tokens
             tokenized_count += 1
->>>>>>> e11d3ba8296a3fd7ba7d6143abed7de0bbda7be6
 
     output_dir.mkdir(parents=True, exist_ok=True)
     all_records: list[dict[str, object]] = []
@@ -287,12 +281,9 @@ def build_corpus(
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "embedding_status": "generated" if embeddings else "not_generated",
         "embedded_chunks": embedded_count,
-<<<<<<< HEAD
         "stem_status": "generated" if stems else "not_generated",
         "stemmed_chunks": stemmed_count,
-=======
         "tokenized_chunks": tokenized_count,
->>>>>>> e11d3ba8296a3fd7ba7d6143abed7de0bbda7be6
         "retrieval": "full_text_with_optional_vector_score",
         "effective_scope": "as_of_build_date" if not keep_expired else "all_versions",
         "built_as_of": as_of.isoformat(),

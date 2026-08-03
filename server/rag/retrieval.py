@@ -246,15 +246,12 @@ class SearchIndex:
             for token in tokens:
                 self._token_index[token].add(index)
                 self._document_frequency[token] += 1
-<<<<<<< HEAD
             for stem in stem_set:
                 self._stem_index[stem].add(index)
-=======
             if chunk.doc_type in _NAME_SIGNAL_DOC_TYPES and chunk.section and not chunk.section.startswith("page:"):
                 self._name_tokens.append(_tokens(chunk.section))
             else:
                 self._name_tokens.append(None)
->>>>>>> e11d3ba8296a3fd7ba7d6143abed7de0bbda7be6
 
     def _active_indices(self, target: date) -> frozenset[int]:
         """Indices of chunks whose effective-date bounds include `target`.

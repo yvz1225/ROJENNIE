@@ -72,6 +72,37 @@ class LogicAuditTests(unittest.TestCase):
         self.assertIn("precedent_only_support", gate.supporting_reasons)
         self.assertIn("유사 사례는 참고용", " ".join(report.consumer_cautions))
 
+    def test_precedent_mixed_with_direct_evidence_still_gets_caution(self) -> None:
+        issue = _issue(
+            evidence_refs=[
+                EvidenceRef(
+                    doc_id="terms_doc",
+                    chunk_id="terms_doc-p1-c1",
+                    path="local:products/deposit/terms.md",
+                    page=1,
+                    section="interest",
+                    score=0.9,
+                    snippet="Direct product terms.",
+                ),
+                EvidenceRef(
+                    doc_id="case_doc",
+                    chunk_id="case_doc-p1-c1",
+                    path="local:cases/kca/dispute_case.md",
+                    page=1,
+                    section="case",
+                    score=0.8,
+                    snippet="A similar dispute case.",
+                ),
+            ],
+            control="proceed",
+        )
+
+        gate = apply_decision_gate(issue)
+        report = compose_issue_report(issue)
+
+        self.assertIn("precedent_only_support", gate.supporting_reasons)
+        self.assertIn("유사 사례는 참고용", " ".join(report.consumer_cautions))
+
     def test_direct_evidence_can_remain_proceed_when_no_other_risks(self) -> None:
         issue = _issue(
             evidence_refs=[

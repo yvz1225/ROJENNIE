@@ -63,11 +63,8 @@ class DocumentChunk(BaseModel):
     section: str | None = None
     text: str
     embedding: list[float] | None = None
-<<<<<<< HEAD
     stems: list[str] = Field(default_factory=list)
-=======
     tokens: list[str] | None = None
->>>>>>> e11d3ba8296a3fd7ba7d6143abed7de0bbda7be6
 
 
 class IssueInput(BaseModel):
